@@ -18,6 +18,7 @@
 #' @param break_idx The index of the first gene in each chromosome. This will generate a horizontal line for each index.
 #' @param cluster_colour A vector of colours for each cluster.
 #' @param heatmap_colour Colours for \code{input} and \code{state_mean}.
+#' @param midpoint TODO: documentation
 #'
 #' @return gg object
 #'

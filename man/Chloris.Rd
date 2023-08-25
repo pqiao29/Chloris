@@ -28,6 +28,8 @@ Chloris(
 \item{break_idx}{The index of the first gene in each chromosome, so that genes from different chromosomes are treated as independent.
 If \code{break_idx = NULL}, it is assumed that there is spatial dependency between all genes with adjacent indices.}
 
+\item{init}{TODO: documentation}
+
 \item{K}{An integer that is likely to be larger than the true number of clusters.
 The resulting optimal number of clusters is <= K.}
 
@@ -36,6 +38,8 @@ The resulting optimal number of clusters is <= K.}
 \item{cluster_shrink_tol}{If a cluster contains less than \code{min_cluster_size} cells for \code{cluster_shrink_tol} consecutive MCMC iterations,
 this cluster will be removed and \code{K} will be decreased accordingly.
 If \code{cluster_shrink_tol == NULL}, then no cluster size constraint is imposed so the function always return \code{K} cluster.}
+
+\item{S}{TODO: documentation}
 
 \item{burnin_tol}{The number of Gibbs iterations for burn-in.}
 

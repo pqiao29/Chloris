@@ -39,6 +39,8 @@ If \code{state_mean == NULL}, the default value is \code{mean(input|s)}, where s
 \item{cluster_colour}{A vector of colours for each cluster.}
 
 \item{heatmap_colour}{Colours for \code{input} and \code{state_mean}.}
+
+\item{midpoint}{TODO: documentation}
 }
 \value{
 gg object
