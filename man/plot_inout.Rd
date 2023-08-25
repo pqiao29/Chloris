@@ -47,8 +47,9 @@ gg object
 Plot input RDR and output clustering and clonal copy number profiles.
 }
 \examples{
+\dontrun{
 sims <- get_sim_data(K = 4, N = 100, U = 200)
 plot_inout(sims$RDR)
 plot_inout(sims$RDR, list(sims$cluster_true), sims$states_true, state_mean = c(-1, 0, 0.5, 1.5))
-
+}
 }

@@ -9,6 +9,7 @@ Chloris(
   A = NULL,
   D = NULL,
   break_idx = NULL,
+  init = "hclust",
   K = 10,
   min_cluster_size = 1,
   cluster_shrink_tol = 20,
@@ -46,8 +47,10 @@ If \code{cluster_shrink_tol == NULL}, then no cluster size constraint is imposed
 3. Identify the optimal number of clones.
 }
 \examples{
+\dontrun{
 sims <- get_sim_data(K = 5, N = 100, U = 200)
 res <- Chloris(sims$RDR)
 plot_inout(sims$RDR, list(res$cluster_est, sims$cluster_true), res$state_est) ## model result
 plot_inout(sims$RDR, list(sims$cluster_true, res$cluster_est), sims$states_true) ## simulation truth
+}
 }
