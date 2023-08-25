@@ -15,4 +15,8 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 Imports: 
-    ggplot2
+    abind,
+    DirichletReg,
+    ggplot2,
+    invgamma,
+    label.switching
