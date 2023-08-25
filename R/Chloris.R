@@ -1,3 +1,10 @@
+#' R package 'Chloris'
+#' @name Chloris-description
+#' @importFrom stats cutree dbinom dist dnorm hclust kmeans median rbeta rbinom rchisq rlnorm rmultinom rnbinom rnorm sd
+#' @importFrom utils capture.output
+NULL
+
+
 #' Main function
 #'
 #' 1. Cluster cells into clones,
