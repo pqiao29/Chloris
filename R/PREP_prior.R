@@ -16,38 +16,35 @@
 
 get_priors <- function(K, S, signal_RDR, signal_BAF,
                        mu = log2(c(0.5, 1, 1.5, 2)), sigma_shape = 10, beta_shape1 = 1, beta_shape2 = 5,
-                       Q_diag = 10, neutral_idx = 2, to_neutral = 1.5){
+                       Q_diag = 10, neutral_idx = 2, to_neutral = 1.5) {
+  ### RDR
+  if (signal_RDR) {
+    if (length(mu) != S) stop("Exception from prior setup:\nThe length of mu should be the same as S.")
 
+    par_mu_0 <- matrix(.1, 2, S) ## sd in prior of mu: 0.1
+    par_mu_0[1, ] <- mu
+    par_sigma_0 <- c(sigma_shape, 1) ## Inv-Gamma parameters
+  }
 
-    ### RDR
-    if(signal_RDR){
+  ### BAF
+  if (signal_BAF) { ### Beta parameters
+    par_theta_0 <- matrix(beta_shape1, 2, S)
+    par_theta_0[2, -neutral_idx] <- beta_shape1 * beta_shape2
+  }
 
-        if(length(mu) != S) stop("Exception from prior setup:\nThe length of mu should be the same as S.")
+  ### Transition
+  par_Q_gamma_0 <- matrix(1, S, S)
+  par_Q_gamma_0[, neutral_idx] <- to_neutral
+  diag(par_Q_gamma_0) <- Q_diag
+  ### clustering
+  par_I_phi_0 <- rep(1 / K, K)
 
-        par_mu_0 <- matrix(.1, 2, S) ## sd in prior of mu: 0.1
-        par_mu_0[1, ] <- mu
-        par_sigma_0 <- c(sigma_shape, 1)     ## Inv-Gamma parameters
-    }
+  ret <- list("Q" = par_Q_gamma_0, "I" = par_I_phi_0, "S" = S, "K" = K, "neutral_idx" = neutral_idx)
+  if (signal_BAF) ret$theta <- par_theta_0
+  if (signal_RDR) {
+    ret$sigma <- par_sigma_0
+    ret$mu <- par_mu_0
+  }
 
-    ### BAF
-    if(signal_BAF){  ### Beta parameters
-        par_theta_0 <- matrix(beta_shape1, 2, S)
-        par_theta_0[2, -neutral_idx] <- beta_shape1*beta_shape2
-    }
-
-    ### Transition
-    par_Q_gamma_0 <- matrix(1, S, S)
-    par_Q_gamma_0[, neutral_idx] <- to_neutral
-    diag(par_Q_gamma_0) <- Q_diag
-    ### clustering
-    par_I_phi_0 <- rep(1/K, K)
-
-    ret <- list("Q" = par_Q_gamma_0, "I" = par_I_phi_0, "S" = S, "K" = K, "neutral_idx" = neutral_idx)
-    if(signal_BAF) ret$theta <- par_theta_0
-    if(signal_RDR){
-        ret$sigma <- par_sigma_0
-        ret$mu <- par_mu_0
-    }
-
-    ret
+  ret
 }
