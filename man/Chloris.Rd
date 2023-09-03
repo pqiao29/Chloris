@@ -9,6 +9,7 @@ Chloris(
   A = NULL,
   D = NULL,
   break_idx = NULL,
+  init = "hclust",
   K = 10,
   min_cluster_size = 1,
   cluster_shrink_tol = 20,
@@ -26,6 +27,8 @@ Chloris(
 
 \item{break_idx}{The index of the first gene in each chromosome, so that genes from different chromosomes are treated as independent.
 If \code{break_idx = NULL}, it is assumed that there is spatial dependency between all genes with adjacent indices.}
+
+\item{init}{Method for initial clustering: "random" or "hclust".}
 
 \item{K}{An integer that is likely to be larger than the true number of clusters.
 The resulting optimal number of clusters is <= K.}

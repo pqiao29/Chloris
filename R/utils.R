@@ -56,20 +56,25 @@ lik_H <- function(H, Q){
     return(ret)
 }
 
-preprocess <- function(counts, ref_label){
-
+## !! not finished !!!
+preprocess <- function(counts, ref_cells, window_smooth = NULL, recentering = FALSE, psudo_count = 0){
+    
     ## Equalize library size
-    lib_sz <- colSums(counts)
-    counts <- t(t(counts)/lib_sz) * median(lib_sz)
-
+    counts <- t(t(counts)/colSums(counts))
+    
     ## Truncate zero's before taking log
-    #counts[counts == 0] <- min(counts[counts > 0])
-    counts <- log2(counts + 1)
-
+    if(psudo_count == 0) counts[counts == 0] <- min(counts[counts > 0])
+    
     ## log ratio
-    RDR <- counts - rowMeans(counts[, ref_label])
-
+    ref <- rowMeans(counts[, ref_cells])
+    RDR <- log2(counts + psudo_count) - log2(ref + psudo_count)
+    
+    ## recentering
+    if(recentering){
+        col_median <- apply(RDR, 2, function(x) { median(x, na.rm=TRUE) } )
+        RDR <- t(apply(RDR, 1, "-", col_median))
+    }
+    
     return(RDR)
-
 }
 

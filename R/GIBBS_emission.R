@@ -1,3 +1,6 @@
+#' @import invgamma
+#' @keywords internal
+
 update_emission <- function(signal_RDR, signal_BAF, RDR, A, D, est, priors){
 
     K <- est$K

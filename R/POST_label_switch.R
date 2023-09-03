@@ -7,6 +7,7 @@
 #' @param loglik_record likelihood of each Gibbs iteration.
 #' @return The order of cluster labels in each MCMC iteration.
 #' @keywords internal
+#' @import label.switching
 
 ECR <- function(cluster_record, loglik_record){
 
