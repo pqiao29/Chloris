@@ -8,7 +8,7 @@ sim_RDR(
   cell_level_states,
   CN_levels,
   from_Splat,
-  RDR_sd = NULL,
+  var_true = NULL,
   RDR_outlier_cnt = 0
 )
 }

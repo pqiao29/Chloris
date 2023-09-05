@@ -28,6 +28,8 @@ get_sim_data(
 
 \item{U}{The number of genes.}
 
+\item{S}{TODO}
+
 \item{expr}{TRUE if gene count is to be generated.}
 
 \item{RDR}{TRUE if RDR is to be generated. If expr == TRUE, RDR will be obtained from expr, otherwise generated from Normal distribution.}
@@ -45,6 +47,8 @@ get_sim_data(
 \item{BAF_missing_percent}{The percentage of NA in BAF data, effective only if BAF == TRUE.}
 
 \item{BAF_Dmax}{The largest number of total count in BAF. The smaller it is the weaker the BAF signal is.}
+
+\item{Q_to_neutral}{TODO}
 }
 \value{
 Simulated data as well as cell cluster labels and CN state profile for each cluster
