@@ -36,83 +36,83 @@ utils::globalVariables(c("X", "Y"))
 #' plot_inout(sims$RDR, list(res$cluster_est, sims$cluster_true), res$state_est) ## model result
 #' plot_inout(sims$RDR, list(sims$cluster_true, res$cluster_est), sims$states_true) ## simulation truth
 #' }
-
-
 Chloris <- function(RDR = NULL, A = NULL, D = NULL, break_idx = NULL, init = "hclust",
                     K = 10, min_cluster_size = 1, cluster_shrink_tol = 20, S = 4,
-                    burnin_tol = 300, Gibbs_tol = 300){
+                    burnin_tol = 300, Gibbs_tol = 300) {
+  #### cross checks =================================================================================
+  if (is.null(A) != is.null(D)) stop("A and D need to be both provided or both NULL.")
 
-    #### cross checks =================================================================================
-    if(is.null(A) != is.null(D)) stop("A and D need to be both provided or both NULL.")
+  signal_RDR <- !is.null(RDR)
+  signal_BAF <- !is.null(A)
 
-    signal_RDR <- !is.null(RDR)
-    signal_BAF <- !is.null(A)
+  if (signal_RDR && signal_BAF) {
+    if (!(identical(dim(RDR), dim(A)) && identical(dim(D), dim(A)))) stop("Input RDR, A and D must have the same dimensions!")
+  } else {
+    if (!(signal_RDR || signal_BAF)) stop("Seems like RDR, A and D are all empty? At least give me something!")
+  }
 
-    if(signal_RDR && signal_BAF){
-        if(!(identical(dim(RDR), dim(A)) && identical(dim(D), dim(A)))) stop("Input RDR, A and D must have the same dimensions!")
-    }else{
-        if(!(signal_RDR || signal_BAF)) stop("Seems like RDR, A and D are all empty? At least give me something!")
+  #### prior ========================================================================================
+  neutral_idx <- ifelse(signal_RDR, 2, S)
+  prior_mu <- log2(c(0.5, 1, 1.5, 2))
+  prior_Q_diag <- 10
+  prior_beta_shape1 <- 100
+  prior_beta_shape2 <- c(50, 5, 10)[1:(S - 1)]
+
+  priors <- get_priors(K, S, signal_RDR, signal_BAF,
+    mu = prior_mu, beta_shape1 = prior_beta_shape1, beta_shape2 = prior_beta_shape2,
+    Q_diag = prior_Q_diag, neutral_idx = neutral_idx, to_neutral = 2
+  )
+
+
+  #### Gibbs samplling ===============================================================================
+  res <- Gibbs_main(
+    signal_RDR, signal_BAF, RDR, A, D,
+    priors, init, break_idx, burnin_tol, Gibbs_tol, cluster_shrink_tol, min_cluster_size
+  )
+  K <- res$K
+
+
+  #### post process (label switching) =====================================================================
+  if (!is.null(break_idx)) {
+    Pi_record <- list()
+    for (iter in 1:Gibbs_tol) {
+      Pi_record[[iter]] <- list()
+      for (k in 1:K) {
+        tmp_Pi_record <- lapply(res$Pi_record[[iter]][[k]], function(x) x[-1, ])
+        Pi_record[[iter]][[k]] <- rbind(res$Pi_record[[iter]][[k]][[1]][1, ], abind::abind(tmp_Pi_record, along = 1))
+      }
     }
+  } else {
+    Pi_record <- res$Pi_record
+  } ## Pi_record
 
-    #### prior ========================================================================================
-    neutral_idx = ifelse(signal_RDR, 2, S)
-    prior_mu = log2(c(0.5, 1, 1.5, 2))
-    prior_Q_diag = 10
-    prior_beta_shape1 = 100
-    prior_beta_shape2 = c(50, 5, 10)[1:(S - 1)]
+  res_post <- ECR(res$cluster_record, res$loglik_record)
+  res_aligned <- align_MC_samples(res_post, res$cluster_record, res$state_record, res$Q_record, Pi_record)
 
-    priors <- get_priors(K, S, signal_RDR, signal_BAF,
-                         mu = prior_mu, beta_shape1 = prior_beta_shape1, beta_shape2 = prior_beta_shape2,
-                         Q_diag = prior_Q_diag, neutral_idx = neutral_idx, to_neutral = 2)
+  ## Final check for identity clones
+  res_aligned_backup <- NULL
+  tmp <- do.call(paste, as.data.frame(res_aligned$state_est))
+  rep_cnt <- match(tmp, unique(tmp))
 
+  if (any(table(rep_cnt) > 1)) {
+    res_aligned_backup <- res_aligned
 
-    #### Gibbs samplling ===============================================================================
-    res <- Gibbs_main(signal_RDR, signal_BAF, RDR, A, D,
-                      priors, init, break_idx, burnin_tol, Gibbs_tol, cluster_shrink_tol, min_cluster_size)
-    K <- res$K
-
-
-    #### post process (label switching) =====================================================================
-    if(!is.null(break_idx)){
-        Pi_record <- list()
-        for(iter in 1:Gibbs_tol){
-            Pi_record[[iter]] <- list()
-            for(k in 1:K){
-                tmp_Pi_record <- lapply(res$Pi_record[[iter]][[k]], function(x) x[-1, ])
-                Pi_record[[iter]][[k]] <- rbind(res$Pi_record[[iter]][[k]][[1]][1, ], abind::abind(tmp_Pi_record, along=1) )
-            }
-        }
-    }else{
-        Pi_record <- res$Pi_record
-    } ## Pi_record
-    
-    res_post <- ECR(res$cluster_record, res$loglik_record)
-    res_aligned <- align_MC_samples(res_post, res$cluster_record, res$state_record, res$Q_record, Pi_record)
-
-    ## Final check for identity clones
-    res_aligned_backup = NULL
-    tmp <- do.call(paste, as.data.frame(res_aligned$state_est))
-    rep_cnt <- match(tmp, unique(tmp))
-
-    if(any(table(rep_cnt) > 1)){
-        
-        res_aligned_backup <- res_aligned
-        
-        cluster_est <- res_aligned$cluster_est
-        cluster_est <- as.numeric(as.character(cluster_est)) ## for 10 to be larger than 9
-        rep_clones <- names(table(rep_cnt)[table(rep_cnt) > 1])
-        for(k in rep_clones){
-            clone_idx <- which(rep_cnt == k)
-            cluster_est[cluster_est %in% clone_idx[-1]] <- as.numeric(k)
-        }
-        if(max(cluster_est) > length(unique(cluster_est))) cluster_est <- as.numeric(as.character(factor(cluster_est, levels = sort(as.numeric(unique(cluster_est))), labels = 1:length(unique(cluster_est)))))
-        res_aligned$cluster_est <- cluster_est
-        res_aligned$state_est <- unique(res_aligned$state_est)
+    cluster_est <- res_aligned$cluster_est
+    cluster_est <- as.numeric(as.character(cluster_est)) ## for 10 to be larger than 9
+    rep_clones <- names(table(rep_cnt)[table(rep_cnt) > 1])
+    for (k in rep_clones) {
+      clone_idx <- which(rep_cnt == k)
+      cluster_est[cluster_est %in% clone_idx[-1]] <- as.numeric(k)
     }
+    if (max(cluster_est) > length(unique(cluster_est))) cluster_est <- as.numeric(as.character(factor(cluster_est, levels = sort(as.numeric(unique(cluster_est))), labels = 1:length(unique(cluster_est)))))
+    res_aligned$cluster_est <- cluster_est
+    res_aligned$state_est <- unique(res_aligned$state_est)
+  }
 
 
-    return(list("cluster_est" = res_aligned$cluster_est, "state_est" = res_aligned$state_est,
-                "par_record" = res$par_record, "Q_record" = res$Q_record, "K_hat" = K, 
-                "res_aligned_backup" = res_aligned_backup))
-
+  return(list(
+    "cluster_est" = res_aligned$cluster_est, "state_est" = res_aligned$state_est,
+    "par_record" = res$par_record, "Q_record" = res$Q_record, "K_hat" = K,
+    "res_aligned_backup" = res_aligned_backup
+  ))
 }
