@@ -16,6 +16,7 @@ utils::globalVariables(c("X", "Y"))
 #' @param D A matrix of total count from both alleles in a SNP, same dimension as \code{RDR}.
 #' @param break_idx The index of the first gene in each chromosome, so that genes from different chromosomes are treated as independent.
 #'                  If \code{break_idx = NULL}, it is assumed that there is spatial dependency between all genes with adjacent indices.
+#' @param init Method for initial clustering: "random" or "hclust".
 #' @param K An integer that is likely to be larger than the true number of clusters.
 #'          The resulting optimal number of clusters is <= K.
 #' @param min_cluster_size Cluster size constraint. All resulting clusters need to contain at least \code{min_cluster_size} cells.
@@ -54,9 +55,9 @@ Chloris <- function(RDR = NULL, A = NULL, D = NULL, break_idx = NULL, init = "hc
     }
 
     #### prior ========================================================================================
-    neutral_idx = 2
+    neutral_idx = ifelse(signal_RDR, 2, S)
     prior_mu = log2(c(0.5, 1, 1.5, 2))
-    prior_Q_diag = 20
+    prior_Q_diag = 10
     prior_beta_shape1 = 100
     prior_beta_shape2 = c(50, 5, 10)[1:(S - 1)]
 
@@ -84,26 +85,34 @@ Chloris <- function(RDR = NULL, A = NULL, D = NULL, break_idx = NULL, init = "hc
     }else{
         Pi_record <- res$Pi_record
     } ## Pi_record
+    
     res_post <- ECR(res$cluster_record, res$loglik_record)
     res_aligned <- align_MC_samples(res_post, res$cluster_record, res$state_record, res$Q_record, Pi_record)
 
     ## Final check for identity clones
-    tmp <-  do.call(paste, as.data.frame(res$state_est))
+    res_aligned_backup = NULL
+    tmp <- do.call(paste, as.data.frame(res_aligned$state_est))
     rep_cnt <- match(tmp, unique(tmp))
 
     if(any(table(rep_cnt) > 1)){
+        
+        res_aligned_backup <- res_aligned
+        
         cluster_est <- res_aligned$cluster_est
+        cluster_est <- as.numeric(as.character(cluster_est)) ## for 10 to be larger than 9
         rep_clones <- names(table(rep_cnt)[table(rep_cnt) > 1])
         for(k in rep_clones){
             clone_idx <- which(rep_cnt == k)
-            cluster_est[cluster_est %in% clone_idx[-1]] <- k
+            cluster_est[cluster_est %in% clone_idx[-1]] <- as.numeric(k)
         }
+        if(max(cluster_est) > length(unique(cluster_est))) cluster_est <- as.numeric(as.character(factor(cluster_est, levels = sort(as.numeric(unique(cluster_est))), labels = 1:length(unique(cluster_est)))))
         res_aligned$cluster_est <- cluster_est
-        res_aligned$state_est <- res_aligned$state_est[unique(rep_cnt), ]
+        res_aligned$state_est <- unique(res_aligned$state_est)
     }
 
 
     return(list("cluster_est" = res_aligned$cluster_est, "state_est" = res_aligned$state_est,
-                "par_record" = res$par_record, "Q_record" = res$Q_record, "K_hat" = K))
+                "par_record" = res$par_record, "Q_record" = res$Q_record, "K_hat" = K, 
+                "res_aligned_backup" = res_aligned_backup))
 
 }

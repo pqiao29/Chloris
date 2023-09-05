@@ -58,8 +58,15 @@ update_clustering <- function(signal_RDR, signal_BAF, RDR, A, D, est, priors, sa
         Mi <- max(I_i)
         I_i <- I_i - Mi
         I_i <- exp(I_i)/sum(exp(I_i))
-        I_est[i, ] <- t(rmultinom(1, 1, I_i))
-       # I_est[i, which.max(I_i)] <- 1
+        I_est[i, which.max(I_i)] <- 1
+       # I_est[i, ] <- t(rmultinom(1, 1, I_i))
+        # max_cluster <- which(I_i == max(I_i))
+        # if(length(max_cluster) == 1){
+        #     I_est[i, max_cluster] <- 1
+        # }else{
+        #     I_est[i, sample(max_cluster, 1)] <- 1
+        # }
+       
         if(save_prob) phi_record[i, ] <- I_i
     }
 

@@ -2,7 +2,8 @@
 #'
 #' Plot input RDR and output clustering and clonal copy number profiles.
 #'
-#' @param input Matrix of RDR, where each row is a gene and each column represents a cell.
+#' @param input Matrix of RDR or BAF, where each row is a gene and each column represents a cell.
+#' @param type "RDR" or "BAF". 
 #' @param cluster_labels A list of one or more cell partitions, each partition is represented as
 #' an N dimensional vector of cluster labels, N is the number of cells.
 #' The columns in \code{input} will be ordered according to the first element in \code{cluster_labels}.
@@ -17,9 +18,6 @@
 #' @param lim The imposed range of \code{input}.
 #' @param break_idx The index of the first gene in each chromosome. This will generate a horizontal line for each index.
 #' @param cluster_colour A vector of colours for each cluster.
-#' @param heatmap_colour Colours for \code{input} and \code{state_mean}.
-#' @param midpoint TODO: documentation
-#'
 #' @return gg object
 #'
 #' @import ggplot2
@@ -34,15 +32,25 @@
 
 ##cluster_labels: list of cell cluster labels. The cells or columns in input will be ordered according to the first element
 
-plot_inout <- function(input, cluster_labels = NULL,
+plot_inout <- function(input, type = "RDR", cluster_labels = NULL,
                        CN_states = NULL, state_mean = NULL,
                        lim = NULL, break_idx = NULL,
-                       cluster_colour = NULL,
-                       heatmap_colour = list("low" = "steelblue", "mid" = "white", "high" = "red1", "na" = "gray"), midpoint = 0){
+                       cluster_colour = NULL){
 
     U <- nrow(input)
     N <- ncol(input)
 
+    if(type == "RDR"){
+        heatmap_colour = list("low" = "steelblue", "mid" = "white", "high" = "red1", "na" = "gray")
+        midpoint = 0
+        background = 0
+    }else{
+        heatmap_colour = list("mid"="turquoise", "low" = "red", "high" = "red", "na" = "white")
+        midpoint = 0.5
+        background = NA
+    }
+    
+    
     ### axis span
     if(is.null(cluster_labels)){
         if(!is.null(CN_states)) stop("cluster_labels needs to be provided for plotting CN_states.")
@@ -72,13 +80,13 @@ plot_inout <- function(input, cluster_labels = NULL,
             X_span <- X_span + (gap_length_x + CNV_length_x) * K + fixed_gap_x
 
             if(is.null(state_mean)){
-                S <- length(unique(c(CN_states)))
+                S <- max(CN_states)
                 state_mean <- rep(NA, S)
                 CN_states_backup <- CN_states
                 tmp_I <- matrix(0, N, K)
                 for(k in 1:K) tmp_I[I == k, k] <- 1
                 input_state <- get_cell_level_states(tmp_I, CN_states)
-                for(s in 1:S) state_mean[s] <- mean(input[input_state == s])
+                for(s in 1:S) state_mean[s] <- mean(input[input_state == s], na.rm = T)
             }
             for(s in unique(CN_states)){
                 CN_states[CN_states == s] <- state_mean[s]
@@ -94,15 +102,15 @@ plot_inout <- function(input, cluster_labels = NULL,
         cluster_labels_sorted <- lapply(cluster_labels, function(x) x[cell_order])
 
         ### Initialize data.frame for ggplot
-        inout_matrix <- rbind(input_sorted, matrix(0, Y_span - U, N))
+        inout_matrix <- rbind(input_sorted, matrix(background, Y_span - U, N))
 
         ### Add states
         if(!is.null(CN_states)){
-            inout_matrix <- cbind(inout_matrix, matrix(0, nrow(inout_matrix), fixed_gap_x))
+            inout_matrix <- cbind(inout_matrix, matrix(background, nrow(inout_matrix), fixed_gap_x))
             for(k in 1:K){
                 states_k <- rbind(matrix(CN_states[k, ], U, CNV_length_x),
-                                  matrix(0, Y_span - U, CNV_length_x))
-                inout_matrix <- cbind(inout_matrix, matrix(0, Y_span, gap_length_x), states_k)
+                                  matrix(background, Y_span - U, CNV_length_x))
+                inout_matrix <- cbind(inout_matrix, matrix(background, Y_span, gap_length_x), states_k)
             }
         }
         df$input <- c(t(inout_matrix))

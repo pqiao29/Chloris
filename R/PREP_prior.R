@@ -24,7 +24,7 @@ get_priors <- function(K, S, signal_RDR, signal_BAF,
 
         if(length(mu) != S) stop("Exception from prior setup:\nThe length of mu should be the same as S.")
 
-        par_mu_0 <- matrix(.1, 2, S) ## sd in prior of mu: 0.1
+        par_mu_0 <- matrix(.1, 2, S) ## sd in prior of mu
         par_mu_0[1, ] <- mu
         par_sigma_0 <- c(sigma_shape, 1)     ## Inv-Gamma parameters
     }

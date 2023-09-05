@@ -8,15 +8,17 @@ get_sim_data(
   K,
   N,
   U,
+  S = 4,
   expr = TRUE,
   RDR = TRUE,
   BAF = TRUE,
-  RDR_sd = NULL,
+  RDR_var = NULL,
   norm_clone_prob = 0.2,
   CNV_overlap = TRUE,
   RDR_outlier_cnt = 0,
   BAF_missing_percent = 0.9,
-  BAF_Dmax = 10
+  BAF_Dmax = 10,
+  Q_to_neutral = 2
 )
 }
 \arguments{
@@ -32,7 +34,7 @@ get_sim_data(
 
 \item{BAF}{TRUE if BAF is to be generated.}
 
-\item{RDR_sd}{The standard error of RDR if generated from Normal distribution, needed iff expr == FALSE and RDR == TRUE.}
+\item{RDR_var}{The variance of RDR if generated from Normal distribution, needed iff expr == FALSE and RDR == TRUE.}
 
 \item{norm_clone_prob}{The proportion of normal cluster among all cells.}
 

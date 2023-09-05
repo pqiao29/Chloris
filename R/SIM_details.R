@@ -78,7 +78,7 @@ sim_BAF <- function(cell_level_states, theta_true, Md, missing_percent){
     U <- nrow(cell_level_states)
 
     A <- matrix(NA, U, N)
-    D <- matrix(sample(2:Md, U*N, replace = T), U, N)
+    D <- matrix(sample(4:Md, U*N, replace = T), U, N)
     if(missing_percent > 0) D[sample(1:length(D), length(D)*missing_percent, replace = F)] <- 0
 
     for(i in 1:N){
@@ -92,25 +92,28 @@ sim_BAF <- function(cell_level_states, theta_true, Md, missing_percent){
 
 #' Simulate RDR
 #' @keywords internal
-sim_RDR <- function(cell_level_states, CN_levels, from_Splat, RDR_sd = NULL, RDR_outlier_cnt = 0){
+sim_RDR <- function(cell_level_states, CN_levels, from_Splat, var_true = NULL, RDR_outlier_cnt = 0){
 
     S <- length(CN_levels)
     N <- ncol(cell_level_states)
     U <- nrow(cell_level_states)
 
     if(!from_Splat){
-        if(is.null(RDR_sd)) stop("If from_Splat == FALSE, RDR_sd must be provided!")
         RDR <- matrix(NA, nrow(cell_level_states), ncol(cell_level_states))
-        for(s in 1:S){
-            RDR[cell_level_states == s] <- rnorm(sum(cell_level_states == s), CN_levels[s], RDR_sd)
+        for(i in 1:N){
+            for(u in 1:U){
+                s <- cell_level_states[u, i]
+                RDR[u, i] <- rnorm(n = 1, CN_levels[s], sqrt(var_true[u, i]))
+            }
         }
         ret <- list("RDR" = RDR)
     }else{
-        raw_count <- sim_expr_Splat(cell_level_states, 2^CN_levels, outlier_cnt = RDR_outlier_cnt)
-        processed_data <- preprocess_sims(raw_count)
-        ret <- list("RDR" = processed_data$RDR, "RDR_summary" = processed_data$summary,
-                    "raw" = list("tumor" = raw_count$tumor, "ref" = raw_count$ref),
-                    "keep_gene" = raw_count$keep_gene, "cell_level_states" = raw_count$cell_level_RDR_state)
+        # processed_data <- preprocess_sims(raw_count)
+        # ret <- list("RDR" = processed_data$RDR, "RDR_summary" = processed_data$summary,
+        #             "raw" = list("tumor" = raw_count$tumor, "ref" = raw_count$ref),
+        #             "keep_gene" = raw_count$keep_gene, "cell_level_states" = raw_count$cell_level_RDR_state)
+        
+        ret <- sim_expr_Splat(cell_level_states, 2^CN_levels, outlier_cnt = RDR_outlier_cnt)
     }
 
     return(ret)
@@ -136,7 +139,7 @@ Splat_GeneMeans <- function(U){
 Splat_meanvar <- function(BaseMeans, outlier_cnt = 0){
     N <- ncol(BaseMeans)
     U <- nrow(BaseMeans)
-    bcv.common = 0.1
+    bcv.common = 0.5#0.1
     bcv.df = 16
     BCV <- (bcv.common + (1 / rowMeans(BaseMeans))) * sqrt(bcv.df / rchisq(U, df = bcv.df))
     BCV <- matrix(BCV, U, N)
@@ -157,7 +160,7 @@ sim_expr_Splat <- function(cell_level_states, CN_levels, outlier_cnt = 0, verbos
     GeneMean <- Splat_GeneMeans(intended_U)
     prob_gene <- GeneMean/sum(GeneMean)
     BaseMeans_tumor <- prob_gene %*% t(ExpLibSize)
-    BaseMeans_ref <- prob_gene * median(ExpLibSize)
+    #BaseMeans_ref <- prob_gene * median(ExpLibSize)
 
     ## Add CNV to tumor
     copy_number <- as.numeric(as.character(factor(cell_level_states, levels = 1:length(CN_levels), labels = CN_levels)))
@@ -166,17 +169,19 @@ sim_expr_Splat <- function(cell_level_states, CN_levels, outlier_cnt = 0, verbos
 
     ## NB with common dispersion
     counts_tumor <- Splat_meanvar(BaseMeans_tumor, outlier_cnt)
-    counts_ref <- Splat_meanvar(matrix(BaseMeans_ref, ncol = 1))
+    #counts_ref <- Splat_meanvar(matrix(BaseMeans_ref, ncol = 1))
 
     ## zero's in bulk ref considered uninterpretable
-    keep_gene <- (counts_ref != 0)
-    U <- sum(keep_gene)
-    if(verbose) cat("Simulated ", U, "genes with non-zero bulk reference\n")
-    counts_ref <- counts_ref[keep_gene]
-    counts_tumor <- counts_tumor[keep_gene, ]
-
-    return(list("tumor" = counts_tumor, "ref" = counts_ref,
-                "keep_gene" = keep_gene, "cell_level_RDR_states" = copy_number[keep_gene, ]))
+    # keep_gene <- (counts_ref != 0)
+    # U <- sum(keep_gene)
+    # if(verbose) cat("Simulated ", U, "genes with non-zero bulk reference\n")
+    # counts_ref <- counts_ref[keep_gene]
+    # counts_tumor <- counts_tumor[keep_gene, ]
+    # 
+    # return(list("tumor" = counts_tumor, "ref" = counts_ref,
+    #             "keep_gene" = keep_gene, "cell_level_RDR_states" = copy_number[keep_gene, ]))
+    
+    return(counts_tumor)
 
 }
 
@@ -211,3 +216,6 @@ preprocess_sims <- function(count_data, cell_level_RDR_states){
 
     list("RDR" = RDR, "summary" = print_summary)
 }
+
+
+

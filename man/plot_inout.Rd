@@ -6,18 +6,19 @@
 \usage{
 plot_inout(
   input,
+  type = "RDR",
   cluster_labels = NULL,
   CN_states = NULL,
   state_mean = NULL,
   lim = NULL,
   break_idx = NULL,
-  cluster_colour = NULL,
-  heatmap_colour = list(low = "steelblue", mid = "white", high = "red1", na = "gray"),
-  midpoint = 0
+  cluster_colour = NULL
 )
 }
 \arguments{
-\item{input}{Matrix of RDR, where each row is a gene and each column represents a cell.}
+\item{input}{Matrix of RDR or BAF, where each row is a gene and each column represents a cell.}
+
+\item{type}{"RDR" or "BAF".}
 
 \item{cluster_labels}{A list of one or more cell partitions, each partition is represented as
 an N dimensional vector of cluster labels, N is the number of cells.
@@ -37,10 +38,6 @@ If \code{state_mean == NULL}, the default value is \code{mean(input|s)}, where s
 \item{break_idx}{The index of the first gene in each chromosome. This will generate a horizontal line for each index.}
 
 \item{cluster_colour}{A vector of colours for each cluster.}
-
-\item{heatmap_colour}{Colours for \code{input} and \code{state_mean}.}
-
-\item{midpoint}{TODO: documentation}
 }
 \value{
 gg object
