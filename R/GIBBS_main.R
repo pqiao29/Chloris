@@ -9,15 +9,12 @@ Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
 
   est <- Gibbs_init(signal_RDR, signal_BAF, RDR, A, D, priors, break_idx = break_idx, U, clust_method = init)
 
-  tmp_width <- 80 - nchar("||100%") ## for printing progress bar
   if (is.null(cluster_shrink_tol)) {
     cat("Shrinkage disabled.\n")
-
+    pb <- txtProgressBar(min = 0, max = burnin_tol, style = 3)
+    
     for (iter in 1:burnin_tol) {
-      ### progress bar
-      step <- round(iter / burnin_tol * tmp_width)
-      text <- sprintf("|%s%s|% 3s%%", strrep("=", step), strrep(" ", tmp_width - step), round(iter / burnin_tol * 100))
-      cat(text, "\r")
+      setTxtProgressBar(pb, iter)
 
       ### main update
       est <- update_states(signal_RDR, signal_BAF, RDR, A, D, est, U, break_idx = break_idx)
@@ -27,15 +24,13 @@ Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
     }
   } else {
     cat("Shrinkage enabled.\n")
-
+    pb <- txtProgressBar(min = 0, max = burnin_tol, style = 3)
+    
     empty_cluster_tracker <- NULL
     iter <- 1
     while (iter <= burnin_tol) {
-      ### progress bar
-      step <- round(iter / burnin_tol * tmp_width)
-      text <- sprintf("|%s%s|% 3s%%", strrep("=", step), strrep(" ", tmp_width - step), round(iter / burnin_tol * 100))
-      cat(text, "\r")
-
+      setTxtProgressBar(pb, iter)
+      
       ### Main update
       est <- update_states(signal_RDR, signal_BAF, RDR, A, D, est, U, break_idx = break_idx)
       est <- update_clustering(signal_RDR, signal_BAF, RDR, A, D, est, priors, save_prob = FALSE)
@@ -54,6 +49,8 @@ Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
         cat(" to ", K, "\n")
         iter <- 0
         empty_cluster_tracker <- NULL
+        pb <- txtProgressBar(min = 0, max = burnin_tol, style = 3)
+        
         est <- Gibbs_init(signal_RDR, signal_BAF, RDR, A, D, priors, break_idx = break_idx, U, clust_method = init)
       } else {
         if (min(cluster_size) <= min_cluster_size) {
@@ -63,7 +60,7 @@ Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
 
       iter <- iter + 1
     }
-    cat(text, "\n")
+    cat("\n")
   }
 
   N <- ifelse(signal_RDR, ncol(RDR), ncol(A))
@@ -76,12 +73,12 @@ Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
   Q_record <- list()
   Pi_record <- list()
 
+  pb <- txtProgressBar(min = 0, max = Gibbs_tol, style = 3)
   for (Gibbs_iter in 1:Gibbs_tol) {
-    ### progress bar
-    step <- round(Gibbs_iter / burnin_tol * tmp_width)
-    text <- sprintf("|%s%s|% 3s%%", strrep("=", step), strrep(" ", tmp_width - step), round(Gibbs_iter / burnin_tol * 100))
-    cat(paste0("\033[0;31m", text, "\033[0m", "\r"))
-
+    cat("\033[0;31m")
+    setTxtProgressBar(pb, Gibbs_iter)
+    cat("\033[0m")
+    
     est <- update_states(signal_RDR, signal_BAF, RDR, A, D, est, U, break_idx = break_idx)
     est <- update_clustering(signal_RDR, signal_BAF, RDR, A, D, est, priors, save_prob = FALSE)
     est <- update_transition(est, priors)
