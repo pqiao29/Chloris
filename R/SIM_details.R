@@ -187,7 +187,7 @@ sim_expr_Splat <- function(cell_level_states, CN_levels, outlier_cnt = 0, verbos
 
 #' Preprocess simulated gene expression data to RDR and summary(RDR|state)
 #' @keywords internal
-preprocess_sims <- function(count_data){
+preprocess_sims <- function(count_data, cell_level_RDR_states){
 
     for(x in names(count_data)) assign(x, count_data[[x]])
 

@@ -53,8 +53,9 @@ Simulated data as well as cell cluster labels and CN state profile for each clus
 Create scRNA-seq count data, RDR or BAF for testing \code{Chloris}
 }
 \examples{
+\dontrun{
 sims <- get_sim_data(K = 4, N = 100, U = 200)
 names(sims)
 plot_inout(sims$RDR, list(sims$cluster_true), sims$states_true, state_mean = c(-1, 0, 0.5, 1.5))
-
+}
 }

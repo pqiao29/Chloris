@@ -1,3 +1,10 @@
+#' R package 'Chloris'
+#' @name Chloris-description
+#' @importFrom stats cutree dbinom dist dnorm hclust kmeans median rbeta rbinom rchisq rlnorm rmultinom rnbinom rnorm sd
+#' @importFrom utils capture.output
+utils::globalVariables(c("X", "Y"))
+
+
 #' Main function
 #'
 #' 1. Cluster cells into clones,
@@ -16,15 +23,19 @@
 #' @param cluster_shrink_tol If a cluster contains less than \code{min_cluster_size} cells for \code{cluster_shrink_tol} consecutive MCMC iterations,
 #'                           this cluster will be removed and \code{K} will be decreased accordingly.
 #'                           If \code{cluster_shrink_tol == NULL}, then no cluster size constraint is imposed so the function always return \code{K} cluster.
+#' @param init TODO: documentation
+#' @param S TODO: documentation
 #' @param burnin_tol The number of Gibbs iterations for burn-in.
 #' @param Gibbs_tol The number of Gibbs iterations after burn-in.
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' sims <- get_sim_data(K = 5, N = 100, U = 200)
 #' res <- Chloris(sims$RDR)
 #' plot_inout(sims$RDR, list(res$cluster_est, sims$cluster_true), res$state_est) ## model result
 #' plot_inout(sims$RDR, list(sims$cluster_true, res$cluster_est), sims$states_true) ## simulation truth
+#' }
 
 
 Chloris <- function(RDR = NULL, A = NULL, D = NULL, break_idx = NULL, init = "hclust",
