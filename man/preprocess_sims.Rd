@@ -4,7 +4,7 @@
 \alias{preprocess_sims}
 \title{Preprocess simulated gene expression data to RDR and summary(RDR|state)}
 \usage{
-preprocess_sims(count_data)
+preprocess_sims(count_data, cell_level_RDR_states)
 }
 \description{
 Preprocess simulated gene expression data to RDR and summary(RDR|state)

@@ -39,6 +39,8 @@ The resulting optimal number of clusters is <= K.}
 this cluster will be removed and \code{K} will be decreased accordingly.
 If \code{cluster_shrink_tol == NULL}, then no cluster size constraint is imposed so the function always return \code{K} cluster.}
 
+\item{S}{TODO: documentation}
+
 \item{burnin_tol}{The number of Gibbs iterations for burn-in.}
 
 \item{Gibbs_tol}{The number of Gibbs iterations after burn-in.}
@@ -49,8 +51,10 @@ If \code{cluster_shrink_tol == NULL}, then no cluster size constraint is imposed
 3. Identify the optimal number of clones.
 }
 \examples{
+\dontrun{
 sims <- get_sim_data(K = 5, N = 100, U = 200)
 res <- Chloris(sims$RDR)
 plot_inout(sims$RDR, list(res$cluster_est, sims$cluster_true), res$state_est) ## model result
 plot_inout(sims$RDR, list(sims$cluster_true, res$cluster_est), sims$states_true) ## simulation truth
+}
 }
