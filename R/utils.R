@@ -57,7 +57,8 @@ lik_H <- function(H, Q){
 }
 
 ## !! not finished !!!
-preprocess <- function(counts, ref_cells, window_smooth = NULL, recentering = FALSE, psudo_count = 0){
+#' @export
+preprocess <- function(counts, ref_cells, window_smooth = NULL, recentering = TRUE, psudo_count = 0){
     
     ## Equalize library size
     counts <- t(t(counts)/colSums(counts))

@@ -46,7 +46,7 @@ Chloris <- function(RDR = NULL, A = NULL, D = NULL, break_idx = NULL, init = "hc
     #### prior ========================================================================================
     neutral_idx = ifelse(signal_RDR, 2, S)
     prior_mu = log2(c(0.5, 1, 1.5, 2))
-    prior_Q_diag = 10
+    prior_Q_diag = 20
     prior_beta_shape1 = 100
     prior_beta_shape2 = c(50, 5, 10)[1:(S - 1)]
 
