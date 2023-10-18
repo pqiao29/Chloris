@@ -135,7 +135,7 @@ Splat_GeneMeans <- function(U) {
 Splat_meanvar <- function(BaseMeans, outlier_cnt = 0) {
   N <- ncol(BaseMeans)
   U <- nrow(BaseMeans)
-  bcv.common <- 0.1
+  bcv.common <- 0.2
   bcv.df <- 16
   BCV <- (bcv.common + (1 / rowMeans(BaseMeans))) * sqrt(bcv.df / rchisq(U, df = bcv.df))
   BCV <- matrix(BCV, U, N)

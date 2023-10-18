@@ -1,6 +1,8 @@
+#' @importFrom utils setTxtProgressBar txtProgressBar
+
 Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
                        priors, init, break_idx = NULL,
-                       burnin_tol, Gibbs_tol, cluster_shrink_tol, min_cluster_size) {
+                       burnin_tol, Gibbs_tol, cluster_shrink_tol, min_cluster_size, verbose) {
   S <- priors$S
   K <- priors$K
 
@@ -10,11 +12,14 @@ Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
   est <- Gibbs_init(signal_RDR, signal_BAF, RDR, A, D, priors, break_idx = break_idx, U, clust_method = init)
 
   if (is.null(cluster_shrink_tol)) {
-    cat("Shrinkage disabled.\n")
-    pb <- txtProgressBar(min = 0, max = burnin_tol, style = 3)
-    
+      
+    if(verbose){
+        cat("Shrinkage disabled.\n")
+        pb <- txtProgressBar(min = 0, max = burnin_tol, style = 3)
+    }
+
     for (iter in 1:burnin_tol) {
-      setTxtProgressBar(pb, iter)
+       if(verbose) setTxtProgressBar(pb, iter)
 
       ### main update
       est <- update_states(signal_RDR, signal_BAF, RDR, A, D, est, U, break_idx = break_idx)
@@ -23,13 +28,16 @@ Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
       est <- update_emission(signal_RDR, signal_BAF, RDR, A, D, est, priors)
     }
   } else {
-    cat("Shrinkage enabled.\n")
-    pb <- txtProgressBar(min = 0, max = burnin_tol, style = 3)
+      
+      if(verbose){
+          cat("Shrinkage enabled.\n")
+          pb <- txtProgressBar(min = 0, max = burnin_tol, style = 3) 
+      }
     
     empty_cluster_tracker <- NULL
     iter <- 1
     while (iter <= burnin_tol) {
-      setTxtProgressBar(pb, iter)
+      if(verbose) setTxtProgressBar(pb, iter)
       
       ### Main update
       est <- update_states(signal_RDR, signal_BAF, RDR, A, D, est, U, break_idx = break_idx)
@@ -41,12 +49,12 @@ Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
 
       if (length(empty_cluster_tracker) >= cluster_shrink_tol) {
         ### Shrink K in prior
-        cat("\nK shrinks from ", K)
+        if(verbose) cat("\nK shrinks from ", K)
         K <- K - min(empty_cluster_tracker)
         priors$I <- rep(1 / K, K)
         priors$K <- K
         ### restart
-        cat(" to ", K, "\n")
+        if(verbose) cat(" to ", K, "\n")
         iter <- 0
         empty_cluster_tracker <- NULL
         pb <- txtProgressBar(min = 0, max = burnin_tol, style = 3)
@@ -73,11 +81,14 @@ Gibbs_main <- function(signal_RDR, signal_BAF, RDR, A, D,
   Q_record <- list()
   Pi_record <- list()
 
-  pb <- txtProgressBar(min = 0, max = Gibbs_tol, style = 3)
+  if(verbose) pb <- txtProgressBar(min = 0, max = Gibbs_tol, style = 3)
   for (Gibbs_iter in 1:Gibbs_tol) {
-    cat("\033[0;31m")
-    setTxtProgressBar(pb, Gibbs_iter)
-    cat("\033[0m")
+
+    if(verbose){
+        cat("\033[0;31m")
+        setTxtProgressBar(pb, Gibbs_iter)
+        cat("\033[0m")
+    }
     
     est <- update_states(signal_RDR, signal_BAF, RDR, A, D, est, U, break_idx = break_idx)
     est <- update_clustering(signal_RDR, signal_BAF, RDR, A, D, est, priors, save_prob = FALSE)

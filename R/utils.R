@@ -53,7 +53,13 @@ lik_H <- function(H, Q) {
   return(ret)
 }
 
-## !! not finished !!!
+#' Basic preprocess
+#'
+#' @param counts Raw gene count matrix, gene*cell
+#' @param ref_cells A vector of reference or normal cell index.
+#' @param window_smooth window size for window smoothing, NULL then no window smoothing applied
+#' @param recentering Recenter RDR for each cell independently. 
+#' @param psudo_count Psudo count in log2 transform
 #' @export
 preprocess <- function(counts, ref_cells, window_smooth = NULL, recentering = FALSE, psudo_count = 0) {
   ## Equalize library size

@@ -23,9 +23,10 @@ utils::globalVariables(c("X", "Y"))
 #' @param cluster_shrink_tol If a cluster contains less than \code{min_cluster_size} cells for \code{cluster_shrink_tol} consecutive MCMC iterations,
 #'                           this cluster will be removed and \code{K} will be decreased accordingly.
 #'                           If \code{cluster_shrink_tol == NULL}, then no cluster size constraint is imposed so the function always return \code{K} cluster.
-#' @param S TODO: documentation
+#' @param S the number of copy number states.
 #' @param burnin_tol The number of Gibbs iterations for burn-in.
 #' @param Gibbs_tol The number of Gibbs iterations after burn-in.
+#' @param verbose If print progress bar.
 #'
 #' @export
 #' @examples
@@ -37,7 +38,7 @@ utils::globalVariables(c("X", "Y"))
 #' }
 Chloris <- function(RDR = NULL, A = NULL, D = NULL, break_idx = NULL, init = "hclust",
                     K = 10, min_cluster_size = 1, cluster_shrink_tol = 20, S = 4,
-                    burnin_tol = 300, Gibbs_tol = 300) {
+                    burnin_tol = 300, Gibbs_tol = 300, verbose = TRUE) {
   #### cross checks =================================================================================
   if (is.null(A) != is.null(D)) stop("A and D need to be both provided or both NULL.")
 
@@ -66,8 +67,9 @@ Chloris <- function(RDR = NULL, A = NULL, D = NULL, break_idx = NULL, init = "hc
   #### Gibbs samplling ===============================================================================
   res <- Gibbs_main(
     signal_RDR, signal_BAF, RDR, A, D,
-    priors, init, break_idx, burnin_tol, Gibbs_tol, cluster_shrink_tol, min_cluster_size
+    priors, init, break_idx, burnin_tol, Gibbs_tol, cluster_shrink_tol, min_cluster_size, verbose
   )
+  
   K <- res$K
 
 

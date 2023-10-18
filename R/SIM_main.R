@@ -32,7 +32,7 @@ get_sim_data <- function(K, N, U, S = 4,
                          norm_clone_prob = 0.2, CNV_overlap = FALSE,
                          RDR_outlier_cnt = 0,
                          BAF_missing_percent = 0.9, BAF_Dmax = 10,
-                         Q_to_neutral = 2) {
+                         Q_to_neutral = 1) {
   ### =================================== fixed parameters =============================================
   RDR_levels <- c(0.5, 1, 1.5, 2)[1:S]
   theta_pars <- list("1" = c(10, 200), "2" = c(50, 50), "3" = c(20, 100), "4" = c(20, 150))[1:S]
@@ -50,7 +50,8 @@ get_sim_data <- function(K, N, U, S = 4,
   ### =================================== generate data =============================================
   if (expr) {
     if (RDR_outlier_cnt >= 1) {
-      tmp_cell_level_states <- cbind(cell_level_states, matrix(sample(1:S, U * RDR_outlier_cnt, replace = T), U, RDR_outlier_cnt))
+      #tmp_cell_level_states <- cbind(cell_level_states, matrix(sample(1:S, U * RDR_outlier_cnt, replace = T), U, RDR_outlier_cnt))
+      tmp_cell_level_states <- cbind(cell_level_states, matrix(2, U, RDR_outlier_cnt))  
       RDR_data_full <- sim_RDR(tmp_cell_level_states, log2(RDR_levels), from_Splat = TRUE, var_true = NULL, RDR_outlier_cnt = RDR_outlier_cnt)
     } else {
       RDR_data_full <- sim_RDR(cell_level_states, log2(RDR_levels), from_Splat = TRUE, var_true = NULL, RDR_outlier_cnt = RDR_outlier_cnt)
@@ -77,30 +78,31 @@ get_sim_data <- function(K, N, U, S = 4,
 
       ## add outlier
       if (RDR_outlier_cnt >= 1) {
-        for (i in 1:RDR_outlier_cnt) {
-          outlier_H <- sample(1:S, U, replace = T)
-          outlier_Y <- rep(NA, U)
-          for (s in 1:S) {
-            outlier_Y[outlier_H == s] <- rnorm(sum(outlier_H == s), RDR_levels[s], sd = 4 * RDR_var)
-          }
+          outlier_Y <- matrix(rnorm(RDR_outlier_cnt*U, 0, sd = 2*sqrt(RDR_var)), U, RDR_outlier_cnt)
           RDR_data <- cbind(RDR_data, outlier_Y)
-        }
+        # for (i in 1:RDR_outlier_cnt) {
+        #   outlier_H <- sample(1:S, U, replace = T)
+        #   outlier_Y <- rep(NA, U)
+        #   for (s in 1:S) {
+        #     outlier_Y[outlier_H == s] <- rnorm(sum(outlier_H == s), RDR_levels[s], sd = 4 * RDR_var)
+        #   }
+        #   RDR_data <- cbind(RDR_data, outlier_Y)
+        # }
       }
       N_all <- N + RDR_outlier_cnt
     }
   }
 
   if (BAF) {
-    theta_true <- matrix(NA, U, N)
+    
+    if (RDR_outlier_cnt >= 1) cell_level_states <- cbind(cell_level_states, matrix(2, U, RDR_outlier_cnt))
+    
+    theta_true <- matrix(NA, nrow(cell_level_states), ncol(cell_level_states))
     for (s in 1:S) {
       theta_true[cell_level_states == s] <- rbeta(sum(cell_level_states == s), theta_pars[[s]][1], theta_pars[[s]][2])
     }
     BAF_data <- sim_BAF(cell_level_states, theta_true, Md = BAF_Dmax, BAF_missing_percent)
 
-    if (RDR_outlier_cnt >= 1) {
-      BAF_data$A <- cbind(BAF_data$A, matrix(0, U, RDR_outlier_cnt))
-      BAF_data$D <- cbind(BAF_data$D, matrix(0, U, RDR_outlier_cnt))
-    }
   }
 
   ### =================================== return =============================================

@@ -15,7 +15,8 @@ Chloris(
   cluster_shrink_tol = 20,
   S = 4,
   burnin_tol = 300,
-  Gibbs_tol = 300
+  Gibbs_tol = 300,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -39,11 +40,13 @@ The resulting optimal number of clusters is <= K.}
 this cluster will be removed and \code{K} will be decreased accordingly.
 If \code{cluster_shrink_tol == NULL}, then no cluster size constraint is imposed so the function always return \code{K} cluster.}
 
-\item{S}{TODO: documentation}
+\item{S}{the number of copy number states.}
 
 \item{burnin_tol}{The number of Gibbs iterations for burn-in.}
 
 \item{Gibbs_tol}{The number of Gibbs iterations after burn-in.}
+
+\item{verbose}{If print progress bar.}
 }
 \description{
 1. Cluster cells into clones,

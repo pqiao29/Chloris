@@ -14,11 +14,11 @@ get_sim_data(
   BAF = TRUE,
   RDR_var = NULL,
   norm_clone_prob = 0.2,
-  CNV_overlap = TRUE,
+  CNV_overlap = FALSE,
   RDR_outlier_cnt = 0,
   BAF_missing_percent = 0.9,
   BAF_Dmax = 10,
-  Q_to_neutral = 2
+  Q_to_neutral = 1
 )
 }
 \arguments{
