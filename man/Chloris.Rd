@@ -14,6 +14,7 @@ Chloris(
   min_cluster_size = 1,
   cluster_shrink_tol = 20,
   S = 4,
+  prior_Q_diag = 20,
   burnin_tol = 300,
   Gibbs_tol = 300,
   verbose = TRUE
@@ -41,6 +42,8 @@ this cluster will be removed and \code{K} will be decreased accordingly.
 If \code{cluster_shrink_tol == NULL}, then no cluster size constraint is imposed so the function always return \code{K} cluster.}
 
 \item{S}{the number of copy number states.}
+
+\item{prior_Q_diag}{Prior of diagonal element in transition matrix in HMM.}
 
 \item{burnin_tol}{The number of Gibbs iterations for burn-in.}
 

@@ -14,8 +14,8 @@
 #' @param RDR_outlier_cnt An integer. The number of outlier cells with random CN profiles.
 #' @param BAF_missing_percent The percentage of NA in BAF data, effective only if BAF == TRUE.
 #' @param BAF_Dmax The largest number of total count in BAF. The smaller it is the weaker the BAF signal is.
-#' @param S TODO
-#' @param Q_to_neutral TODO
+#' @param S The number of CN states, default = 4.
+#' @param Q_to_neutral The transition probability of (neutral | non-neutral) in simulated Markov CN profile.
 #' @return Simulated data as well as cell cluster labels and CN state profile for each cluster
 #'
 #' @export

@@ -24,6 +24,7 @@ utils::globalVariables(c("X", "Y"))
 #'                           this cluster will be removed and \code{K} will be decreased accordingly.
 #'                           If \code{cluster_shrink_tol == NULL}, then no cluster size constraint is imposed so the function always return \code{K} cluster.
 #' @param S the number of copy number states.
+#' @param prior_Q_diag Prior of diagonal element in transition matrix in HMM.
 #' @param burnin_tol The number of Gibbs iterations for burn-in.
 #' @param Gibbs_tol The number of Gibbs iterations after burn-in.
 #' @param verbose If print progress bar.
@@ -37,7 +38,7 @@ utils::globalVariables(c("X", "Y"))
 #' plot_inout(sims$RDR, list(sims$cluster_true, res$cluster_est), sims$states_true) ## simulation truth
 #' }
 Chloris <- function(RDR = NULL, A = NULL, D = NULL, break_idx = NULL, init = "hclust",
-                    K = 10, min_cluster_size = 1, cluster_shrink_tol = 20, S = 4,
+                    K = 10, min_cluster_size = 1, cluster_shrink_tol = 20, S = 4, prior_Q_diag = 20, 
                     burnin_tol = 300, Gibbs_tol = 300, verbose = TRUE) {
   #### cross checks =================================================================================
   if (is.null(A) != is.null(D)) stop("A and D need to be both provided or both NULL.")

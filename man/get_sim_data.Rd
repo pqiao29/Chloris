@@ -28,7 +28,7 @@ get_sim_data(
 
 \item{U}{The number of genes.}
 
-\item{S}{TODO}
+\item{S}{The number of CN states, default = 4.}
 
 \item{expr}{TRUE if gene count is to be generated.}
 
@@ -48,7 +48,7 @@ get_sim_data(
 
 \item{BAF_Dmax}{The largest number of total count in BAF. The smaller it is the weaker the BAF signal is.}
 
-\item{Q_to_neutral}{TODO}
+\item{Q_to_neutral}{The transition probability of (neutral | non-neutral) in simulated Markov CN profile.}
 }
 \value{
 Simulated data as well as cell cluster labels and CN state profile for each cluster
