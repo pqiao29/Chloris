@@ -152,7 +152,7 @@ plot_inout <- function(input, type = "RDR", cluster_labels = NULL,
     y_low <- U + gap_length_y
     y_high <- y_low + cluster_length_y
     I_sorted <- cluster_labels_sorted[[1]]
-    for (k in 1:K) {
+    for (k in 1:Ks[1]) {
       cluster_idx <- which(I_sorted == k)
       gg_ret <- gg_ret + annotate("rect",
         xmin = cluster_idx[1] - 0.5, xmax = cluster_idx[length(cluster_idx)] + 0.5,
