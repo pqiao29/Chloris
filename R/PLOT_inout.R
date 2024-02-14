@@ -8,13 +8,13 @@
 #' an N dimensional vector of cluster labels, N is the number of cells.
 #' The columns in \code{input} will be ordered according to the first element in \code{cluster_labels}.
 #' If \code{cluster_labels == NULL}, the order of columns in \code{input} will be maintained.
-#' @param CN_states A K by U matrix of copy number states in K clusters with U genes.
+#' @param CN_states A list of K by U matrices of copy number states in K clusters with U genes.
 #' @param state_mean
-#' Only needed if \code{!is.null(CN_states)}.
+#' Only needed if \code{!is.null(CN_states)} for adjusting state colour representation in clonal profiles.
 #' The \code{CN_states} will be plotted together with \code{input} as one heatmap, where each state is
-#' represented by the according value in \code{state_mean}. So the main purpose of setting \code{state_mean}
-#' is to control the colour representations of \code{CN_states}.
-#' If \code{state_mean == NULL}, the default value is \code{mean(input|s)}, where s is one of the states.
+#' represented by the according value in \code{state_mean}. 
+#' If \code{state_mean == "standard"}, state labels take the most saturated colours.  
+#' If \code{state_mean == "input"}, state colours reflect observed RDR assigned to each state.
 #' @param lim The imposed range of \code{input}.
 #' @param break_idx The index of the first gene in each chromosome. This will generate a horizontal line for each index.
 #' @param cluster_colour A vector of colours for each cluster.
@@ -31,7 +31,7 @@
 #' }
 ## cluster_labels: list of cell cluster labels. The cells or columns in input will be ordered according to the first element
 plot_inout <- function(input, type = "RDR", cluster_labels = NULL,
-                       CN_states = NULL, state_mean = NULL,
+                       CN_states = NULL, state_mean = "standard",
                        lim = NULL, break_idx = NULL,
                        cluster_colour = NULL) {
   U <- nrow(input)
@@ -61,7 +61,15 @@ plot_inout <- function(input, type = "RDR", cluster_labels = NULL,
     Y_span <- U + (gap_length_y + cluster_length_y) * length(cluster_labels)
 
     I <- cluster_labels[[1]]
-    K <- length(unique(I))
+    
+    ## Cluster count of all groups
+    if(length(cluster_labels) >= length(CN_states)){
+        Ks <- lapply(cluster_labels, function(x) length(unique(x))) 
+    }else{
+        Ks <- lapply(CN_states, function(x) nrow(x)) 
+    }
+    Ks <- unlist(Ks)
+    
     if (N != length(I)) stop("The number of columns of RDR needs to be the same as the length of I_est!")
 
     if (is.null(cluster_colour)) {
@@ -73,20 +81,26 @@ plot_inout <- function(input, type = "RDR", cluster_labels = NULL,
       fixed_gap_x <- max(round(N / 25), 1)
       gap_length_x <- max(round(N / 80), 1)
       CNV_length_x <- max(round(N / 10), 1)
-      X_span <- X_span + (gap_length_x + CNV_length_x) * K + fixed_gap_x
+      for(group in 1:length(CN_states)) X_span <- X_span + (gap_length_x + CNV_length_x) * Ks[group] + fixed_gap_x
 
-      if (is.null(state_mean)) {
-        S <- max(CN_states)
-        state_mean <- rep(NA, S)
-        CN_states_backup <- CN_states
-        tmp_I <- matrix(0, N, K)
-        for (k in 1:K) tmp_I[I == k, k] <- 1
-        input_state <- get_cell_level_states(tmp_I, CN_states)
-        for (s in 1:S) state_mean[s] <- mean(input[input_state == s], na.rm = T)
+      ### Obtain label colors for states in clonal profile 
+      S <- max(unlist(CN_states))
+      state_means <- rep(0, S)
+      if (state_mean == "input") {
+          tmp_I <- matrix(0, N, K1)
+          for (k in 1:K) tmp_I[I == k, k] <- 1
+          input_state <- get_cell_level_states(tmp_I, CN_states[[1]])
+          for (s in 1:S) state_means[s] <- mean(input[input_state == s], na.rm = T)
       }
-      for (s in unique(CN_states)) {
-        CN_states[CN_states == s] <- state_mean[s]
+      if(state_mean == "standard"){ ## Only takes S = 3 or 4 for now
+          if(S == 4) probs <- c(0.1, 0.6, 0.8) else probs <- c(0.1, 0.7) 
+          state_means[-2] <- quantile(c(input), probs = probs)
       }
+      
+      CN_states <- lapply(CN_states, function(x){
+          for(s in 1:S) x[x == s] <- state_means[s]
+          return(x)
+      })
     }
 
     df <- expand.grid(X = 1:X_span, Y = 1:Y_span)
@@ -101,14 +115,16 @@ plot_inout <- function(input, type = "RDR", cluster_labels = NULL,
 
     ### Add states
     if (!is.null(CN_states)) {
-      inout_matrix <- cbind(inout_matrix, matrix(background, nrow(inout_matrix), fixed_gap_x))
-      for (k in 1:K) {
-        states_k <- rbind(
-          matrix(CN_states[k, ], U, CNV_length_x),
-          matrix(background, Y_span - U, CNV_length_x)
-        )
-        inout_matrix <- cbind(inout_matrix, matrix(background, Y_span, gap_length_x), states_k)
-      }
+        for(group in 1:length(CN_states)){
+            inout_matrix <- cbind(inout_matrix, matrix(background, nrow(inout_matrix), fixed_gap_x))
+            for (k in 1:Ks[group]) {
+                states_k <- rbind(
+                    matrix(CN_states[[group]][k, ], U, CNV_length_x),
+                    matrix(background, Y_span - U, CNV_length_x)
+                )
+                inout_matrix <- cbind(inout_matrix, matrix(background, Y_span, gap_length_x), states_k)
+            }
+        }
     }
     df$input <- c(t(inout_matrix))
   }
@@ -170,15 +186,25 @@ plot_inout <- function(input, type = "RDR", cluster_labels = NULL,
       y_high <- U + gap_length_y + cluster_length_y
       x_state_left <- N + fixed_gap_x + gap_length_x
       x_state_step <- CNV_length_x + gap_length_x
-      for (k in 1:K) {
-        cluster_idx <- which(I_sorted == k)
-        gg_ret <- gg_ret + annotate("rect",
-          xmin = x_state_left + (k - 1) * x_state_step - 0.5,
-          xmax = x_state_left + (k - 1) * x_state_step + CNV_length_x + 0.5,
-          ymin = y_low, ymax = y_high,
-          fill = cluster_colour[[1]][k], alpha = .8
-        )
+      
+      xmin <- x_state_left + 1.5
+      xmax <- xmin + CNV_length_x + 1.5
+      
+      for(group in 1:length(CN_states)){
+          for (k in 1:Ks[group]) {
+              cluster_idx <- which(I_sorted == k)
+              gg_ret <- gg_ret + annotate("rect",
+                                          xmin = xmin,
+                                          xmax = xmax,
+                                          ymin = y_low, ymax = y_high,
+                                          fill = cluster_colour[[1]][k], alpha = .8)
+              xmin <- xmin + x_state_step
+              xmax <- xmin + CNV_length_x + 1
+          }
+          xmin <- xmin + fixed_gap_x
+          xmax <- xmax + fixed_gap_x
       }
+      
     }
   }
 

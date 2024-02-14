@@ -9,7 +9,7 @@ plot_inout(
   type = "RDR",
   cluster_labels = NULL,
   CN_states = NULL,
-  state_mean = NULL,
+  state_mean = "standard",
   lim = NULL,
   break_idx = NULL,
   cluster_colour = NULL
@@ -25,13 +25,13 @@ an N dimensional vector of cluster labels, N is the number of cells.
 The columns in \code{input} will be ordered according to the first element in \code{cluster_labels}.
 If \code{cluster_labels == NULL}, the order of columns in \code{input} will be maintained.}
 
-\item{CN_states}{A K by U matrix of copy number states in K clusters with U genes.}
+\item{CN_states}{A list of K by U matrices of copy number states in K clusters with U genes.}
 
-\item{state_mean}{Only needed if \code{!is.null(CN_states)}.
+\item{state_mean}{Only needed if \code{!is.null(CN_states)} for adjusting state colour representation in clonal profiles.
 The \code{CN_states} will be plotted together with \code{input} as one heatmap, where each state is
-represented by the according value in \code{state_mean}. So the main purpose of setting \code{state_mean}
-is to control the colour representations of \code{CN_states}.
-If \code{state_mean == NULL}, the default value is \code{mean(input|s)}, where s is one of the states.}
+represented by the according value in \code{state_mean}. 
+If \code{state_mean == "standard"}, state labels take the most saturated colours.  
+If \code{state_mean == "input"}, state colours reflect observed RDR assigned to each state.}
 
 \item{lim}{The imposed range of \code{input}.}
 
