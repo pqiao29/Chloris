@@ -93,7 +93,7 @@ plot_inout <- function(input, type = "RDR", cluster_labels = NULL,
           for (s in 1:S) state_means[s] <- mean(input[input_state == s], na.rm = T)
       }
       if(state_mean == "standard"){ ## Only takes S = 3 or 4 for now
-          if(S == 4) probs <- c(0.1, 0.6, 0.8) else probs <- c(0.1, 0.7) 
+          if(S == 4) probs <- c(0.1, 0.8, 0.98) else probs <- c(0.1, 0.8) 
           state_means[-2] <- quantile(c(input), probs = probs)
       }
       
