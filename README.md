@@ -52,10 +52,15 @@ sce
 
 #### Separate normal cells using BAF
 
-The `Chloris` function takes ...
-- A and D
-- BAF
-- all
+The `Chloris` function can take one of the following input: 
+
+- **BAF (A and D)**: $M\times N$ matrices representing counts of the alternative allele (A) and total allele (D) at $M$ heterozygous SNPs across $N$ cells.
+- **RDR**: $M\times N$matrics of Relative Depth Ratio of $M$ genes in $N$ cells. 
+
+- When A and D are provided and RDR = NULL, Chloris performs normal vs. tumor cell classification.
+- When RDR is provided, Chloris clusters cells into sub-tumoral clones and infers their clonal copy-number profiles.
+  If A and D are also provided, BAF information is integrated into the model. Otherwise, the clonal structure is inferred using RDR alone.
+
 
 See `?Chloris` for the full list of options / arguments. 
 
@@ -78,9 +83,11 @@ system.time({
 
 
 The output of the `Chloris` function is a list containing
--
--
--
+
+- **cluster_est**:  A vector of cluster labels of each single cell
+- **state_est**: A $k \times M$ matrix with clonal copy-number state labels, where $K$ is the inferred number of clones and $M$ is the number of genes. 
+- **par_record**: An array containing parameters for each copy number state across all Gibbs iterations: $\mu$ and $\sigma$ for RDR and $\theta$ for BAF.
+
 
 
 ```
