@@ -1,15 +1,14 @@
 Package: Chloris
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Bayesian Framework for Copy Number Alteration Analysis in scRNA-seq
 Version: 0.1.1
 Author: Puxue Qiao
 Maintainer: Puxue Qiao <pqiao@svi.edu.au>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: Chloris provides a Bayesian framework for analysing intra-tumoral heterogeneity of copy number alterations (CNA) from single-cell RNA sequencing data. It enables identification of clonal structure and integrates BAF and RDR information for robust inference.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Suggests: 
     knitr,
     rmarkdown

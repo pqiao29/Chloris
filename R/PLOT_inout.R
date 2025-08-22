@@ -87,8 +87,8 @@ plot_inout <- function(input, type = "RDR", cluster_labels = NULL,
       S <- max(unlist(CN_states))
       state_means <- rep(0, S)
       if (state_mean == "input") {
-          tmp_I <- matrix(0, N, K1)
-          for (k in 1:K) tmp_I[I == k, k] <- 1
+          tmp_I <- matrix(0, N, Ks[1])
+          for (k in 1:Ks[1]) tmp_I[I == k, k] <- 1
           input_state <- get_cell_level_states(tmp_I, CN_states[[1]])
           for (s in 1:S) state_means[s] <- mean(input[input_state == s], na.rm = T)
       }

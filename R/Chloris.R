@@ -1,6 +1,6 @@
 #' R package 'Chloris'
 #' @name Chloris-description
-#' @importFrom stats cutree dbinom dist dnorm hclust kmeans median rbeta rbinom rchisq rlnorm rmultinom rnbinom rnorm sd
+#' @importFrom stats cutree dbinom dist dnorm hclust kmeans median rbeta rbinom rchisq rlnorm rmultinom rnbinom rnorm sd quantile
 #' @importFrom utils capture.output
 utils::globalVariables(c("X", "Y"))
 
